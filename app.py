@@ -401,6 +401,72 @@ def show_auth():
     </div>
     """, unsafe_allow_html=True)
 
+    # Landing page content
+    st.markdown("""
+    <div style="text-align:center; padding: 1rem 0 2rem;">
+        <p style="font-size:1.2rem; color:#444; max-width:700px; margin:0 auto; line-height:1.8;">
+        KnowMe is a care profile app designed by parents of non-verbal autistic children.
+        It gives every key worker, carer and teacher instant access to everything they need
+        to know about your child — before they even walk through the door.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Feature cards
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("""
+        <div class="card card-blue" style="text-align:center; padding:1.5rem;">
+            <div style="font-size:2.5rem;">👶</div>
+            <h3>Child Profiles</h3>
+            <p>Store everything about your child in one place. Likes, dislikes, triggers, calming strategies, food preferences, routines and more.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+        <div class="card card-green" style="text-align:center; padding:1.5rem;">
+            <div style="font-size:2.5rem;">🔗</div>
+            <h3>Instant Sharing</h3>
+            <p>Share a unique code with any key worker, teacher or carer. They get instant access to your child's full profile — no account needed.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col3:
+        st.markdown("""
+        <div class="card card-amber" style="text-align:center; padding:1.5rem;">
+            <div style="font-size:2.5rem;">📝</div>
+            <h3>Daily Logs</h3>
+            <p>Parents and carers can add daily log entries. Track mood, food, sleep and behaviour — all in one shared place everyone can see.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Why KnowMe
+    st.markdown("""
+    <div class="card" style="margin-top:1rem; text-align:center;">
+        <h3>💙 Why KnowMe?</h3>
+        <p style="line-height:1.8;">
+        For families of non-verbal autistic children, every new carer or key worker means starting from scratch —
+        repeating the same information over and over, hoping nothing important gets missed.
+        KnowMe changes that. Build your child's profile once and share it instantly with anyone who needs it.
+        From emergency contacts to sensory triggers, from favourite foods to calming strategies —
+        everything is in one place, always up to date, always accessible.
+        </p>
+        <p style="font-weight:700; color:#2196F3; font-size:1.1rem;">
+        Built by a parent. Designed for families like yours. 💙
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Emergency section highlight
+    st.markdown("""
+    <div class="card card-red" style="margin-top:0.5rem;">
+        <h3>🚨 Emergency Ready</h3>
+        <p>Emergency contacts, medical information, allergies, medications and seizure information are always shown first — clearly highlighted so anyone can find what they need instantly in a crisis.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.subheader("Get started")
+
     tab1, tab2, tab3 = st.tabs(["🔑 Login", "📝 Create Account", "🔗 Key Worker Access"])
 
     with tab1:
