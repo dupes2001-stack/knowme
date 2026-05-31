@@ -418,32 +418,32 @@ def show_auth():
         st.markdown("""
         <div class="card card-blue" style="text-align:center; padding:1.5rem;">
             <div style="font-size:2.5rem;">👶</div>
-            <h3>Child Profiles</h3>
-            <p>Store everything about your child in one place. Likes, dislikes, triggers, calming strategies, food preferences, routines and more.</p>
+            <h3 style="color:#1a1a1a;">Child Profiles</h3>
+            <p style="color:#333333;">Store everything about your child in one place. Likes, dislikes, triggers, calming strategies, food preferences, routines and more.</p>
         </div>
         """, unsafe_allow_html=True)
     with col2:
         st.markdown("""
         <div class="card card-green" style="text-align:center; padding:1.5rem;">
             <div style="font-size:2.5rem;">🔗</div>
-            <h3>Instant Sharing</h3>
-            <p>Share a unique code with any key worker, teacher or carer. They get instant access to your child's full profile — no account needed.</p>
+            <h3 style="color:#1a1a1a;">Instant Sharing</h3>
+            <p style="color:#333333;">Share a unique code with any key worker, teacher or carer. They get instant access to your child's full profile — no account needed.</p>
         </div>
         """, unsafe_allow_html=True)
     with col3:
         st.markdown("""
         <div class="card card-amber" style="text-align:center; padding:1.5rem;">
             <div style="font-size:2.5rem;">📝</div>
-            <h3>Daily Logs</h3>
-            <p>Parents and carers can add daily log entries. Track mood, food, sleep and behaviour — all in one shared place everyone can see.</p>
+            <h3 style="color:#1a1a1a;">Daily Logs</h3>
+            <p style="color:#333333;">Parents and carers can add daily log entries. Track mood, food, sleep and behaviour — all in one shared place everyone can see.</p>
         </div>
         """, unsafe_allow_html=True)
 
     # Why KnowMe
     st.markdown("""
     <div class="card" style="margin-top:1rem; text-align:center;">
-        <h3>💙 Why KnowMe?</h3>
-        <p style="line-height:1.8;">
+        <h3 style="color:#1a1a1a;">💙 Why KnowMe?</h3>
+        <p style="line-height:1.8; color:#333333;">
         For families of children with SEND, every new carer, key worker or teacher means starting from scratch —
         repeating the same information over and over, hoping nothing important gets missed.
         KnowMe changes that. Whether your child has autism, ADHD, learning disabilities, physical disabilities,
@@ -460,17 +460,17 @@ def show_auth():
     # Who is it for
     st.markdown("""
     <div class="card card-blue" style="margin-top:0.5rem;">
-        <h3>👨‍👩‍👧‍👦 Who is KnowMe for?</h3>
-        <p>KnowMe is for any family of a child with SEND including:</p>
-        <p>🧩 Autism Spectrum Condition &nbsp;|&nbsp; ⚡ ADHD &nbsp;|&nbsp; 🧠 Learning Disabilities &nbsp;|&nbsp; 👂 Sensory Processing Disorders &nbsp;|&nbsp; 🦽 Physical Disabilities &nbsp;|&nbsp; 💬 Speech and Language Needs &nbsp;|&nbsp; 🌈 Any other SEND diagnosis</p>
+        <h3 style="color:#1a1a1a;">👨‍👩‍👧‍👦 Who is KnowMe for?</h3>
+        <p style="color:#333333;">KnowMe is for any family of a child with SEND including:</p>
+        <p style="color:#333333;">🧩 Autism Spectrum Condition &nbsp;|&nbsp; ⚡ ADHD &nbsp;|&nbsp; 🧠 Learning Disabilities &nbsp;|&nbsp; 👂 Sensory Processing Disorders &nbsp;|&nbsp; 🦽 Physical Disabilities &nbsp;|&nbsp; 💬 Speech and Language Needs &nbsp;|&nbsp; 🌈 Any other SEND diagnosis</p>
     </div>
     """, unsafe_allow_html=True)
 
     # Emergency section highlight
     st.markdown("""
     <div class="card card-red" style="margin-top:0.5rem;">
-        <h3>🚨 Emergency Ready</h3>
-        <p>Emergency contacts, medical information, allergies, medications and seizure information are always shown first — clearly highlighted so anyone can find what they need instantly in a crisis.</p>
+        <h3 style="color:#b71c1c;">🚨 Emergency Ready</h3>
+        <p style="color:#333333;">Emergency contacts, medical information, allergies, medications and seizure information are always shown first — clearly highlighted so anyone can find what they need instantly in a crisis.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -716,6 +716,392 @@ def show_add_child():
                 st.session_state.page = "dashboard"
                 st.rerun()
 
+# ── PDF Generator ─────────────────────────────────────────────────────────────
+def generate_person_centred_pdf(child):
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    import io
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        rightMargin=20*mm, leftMargin=20*mm,
+        topMargin=20*mm, bottomMargin=20*mm
+    )
+
+    # Colours
+    BLUE = colors.HexColor("#2196F3")
+    GREEN = colors.HexColor("#4CAF50")
+    RED = colors.HexColor("#f44336")
+    AMBER = colors.HexColor("#FF9800")
+    LIGHT_BLUE = colors.HexColor("#e3f2fd")
+    LIGHT_GREEN = colors.HexColor("#e8f5e9")
+    LIGHT_RED = colors.HexColor("#fff5f5")
+    LIGHT_AMBER = colors.HexColor("#fffbf0")
+    DARK = colors.HexColor("#1a1a1a")
+    GREY = colors.HexColor("#666666")
+
+    # Styles
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle("title", fontSize=28, textColor=colors.white,
+        fontName="Helvetica-Bold", alignment=TA_CENTER, spaceAfter=4)
+    subtitle_style = ParagraphStyle("subtitle", fontSize=13, textColor=colors.white,
+        fontName="Helvetica", alignment=TA_CENTER)
+    section_style = ParagraphStyle("section", fontSize=13, textColor=colors.white,
+        fontName="Helvetica-Bold", spaceAfter=2)
+    body_style = ParagraphStyle("body", fontSize=10, textColor=DARK,
+        fontName="Helvetica", leading=16, spaceAfter=4)
+    label_style = ParagraphStyle("label", fontSize=9, textColor=GREY,
+        fontName="Helvetica-Bold", spaceAfter=2)
+    name = child.get("name", "")
+    dob_uk = format_dob_uk(child.get("dob","")) if child.get("dob") else ""
+    age_num = age_years(child.get("dob","")) if child.get("dob") else ""
+    diagnosis = child.get("diagnosis","")
+    generated = datetime.now().strftime("%d/%m/%Y")
+
+    story = []
+
+    # ── Header banner ──
+    header_data = [[
+        Paragraph(f"Person Centred Overview", title_style),
+        Paragraph(f"{name}", title_style),
+    ]]
+    header_table = Table(header_data, colWidths=[85*mm, 85*mm])
+    header_table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), BLUE),
+        ("ROUNDEDCORNERS", (0,0), (-1,-1), [8,8,8,8]),
+        ("TOPPADDING", (0,0), (-1,-1), 12),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 12),
+        ("LEFTPADDING", (0,0), (-1,-1), 10),
+        ("RIGHTPADDING", (0,0), (-1,-1), 10),
+    ]))
+    story.append(header_table)
+    story.append(Spacer(1, 4*mm))
+
+    # ── Subtitle info bar ──
+    info_text = f"Date of Birth: {dob_uk}  |  Age: {age_num}  |  Diagnosis: {diagnosis}  |  Document date: {generated}"
+    info_data = [[Paragraph(info_text, ParagraphStyle("info", fontSize=9,
+        textColor=colors.white, fontName="Helvetica", alignment=TA_CENTER))]]
+    info_table = Table(info_data, colWidths=[170*mm])
+    info_table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), GREEN),
+        ("TOPPADDING", (0,0), (-1,-1), 6),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 6),
+        ("ROUNDEDCORNERS", (0,0), (-1,-1), [6,6,6,6]),
+    ]))
+    story.append(info_table)
+    story.append(Spacer(1, 6*mm))
+
+    def section_header(text, colour):
+        data = [[Paragraph(text, section_style)]]
+        t = Table(data, colWidths=[170*mm])
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0,0), (-1,-1), colour),
+            ("TOPPADDING", (0,0), (-1,-1), 7),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 7),
+            ("LEFTPADDING", (0,0), (-1,-1), 10),
+            ("ROUNDEDCORNERS", (0,0), (-1,-1), [6,6,6,6]),
+        ]))
+        return t
+
+    def info_row(label, value, bg=colors.white):
+        if not value or value.strip() == "":
+            return None
+        data = [
+            [Paragraph(label, label_style), Paragraph(value, body_style)]
+        ]
+        t = Table(data, colWidths=[45*mm, 125*mm])
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0,0), (-1,-1), bg),
+            ("TOPPADDING", (0,0), (-1,-1), 4),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 4),
+            ("LEFTPADDING", (0,0), (-1,-1), 8),
+            ("LINEBELOW", (0,0), (-1,-1), 0.3, colors.HexColor("#e0e0e0")),
+        ]))
+        return t
+
+    def full_row(label, value, bg=colors.white):
+        if not value or value.strip() == "":
+            return None
+        data = [[Paragraph(f"<b>{label}</b><br/>{value}", body_style)]]
+        t = Table(data, colWidths=[170*mm])
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0,0), (-1,-1), bg),
+            ("TOPPADDING", (0,0), (-1,-1), 6),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 6),
+            ("LEFTPADDING", (0,0), (-1,-1), 10),
+            ("LINEBELOW", (0,0), (-1,-1), 0.3, colors.HexColor("#e0e0e0")),
+        ]))
+        return t
+
+    def add(item):
+        if item:
+            story.append(item)
+
+    # ── About me ──
+    story.append(section_header("About Me", BLUE))
+    story.append(Spacer(1, 2*mm))
+    add(full_row("My name is:", name, LIGHT_BLUE))
+    add(info_row("Date of Birth:", dob_uk, LIGHT_BLUE))
+    add(info_row("My age:", str(age_num), LIGHT_BLUE))
+    add(info_row("My diagnosis:", diagnosis, LIGHT_BLUE))
+    add(info_row("How I communicate:", child.get("communication",""), LIGHT_BLUE))
+    story.append(Spacer(1, 5*mm))
+
+    # ── What makes me, me ──
+    story.append(section_header("What I Love — Things That Make Me Happy", GREEN))
+    story.append(Spacer(1, 2*mm))
+    add(full_row("I love:", child.get("likes",""), LIGHT_GREEN))
+    add(full_row("My favourite foods are:", child.get("favourite_foods",""), LIGHT_GREEN))
+    add(full_row("My favourite drinks are:", child.get("favourite_drinks",""), LIGHT_GREEN))
+    add(full_row("My favourite objects and comforters are:", child.get("comforters",""), LIGHT_GREEN))
+    story.append(Spacer(1, 5*mm))
+
+    # ── What I find difficult ──
+    story.append(section_header("What I Find Difficult", AMBER))
+    story.append(Spacer(1, 2*mm))
+    add(full_row("I find it hard when:", child.get("dislikes",""), LIGHT_AMBER))
+    add(full_row("Please avoid giving me:", child.get("foods_to_avoid",""), LIGHT_AMBER))
+    story.append(Spacer(1, 5*mm))
+
+    # ── Triggers ──
+    story.append(section_header("Things That Cause Me Distress — Please Be Aware", AMBER))
+    story.append(Spacer(1, 2*mm))
+    add(full_row("Things that trigger distress for me:", child.get("triggers",""), LIGHT_AMBER))
+    story.append(Spacer(1, 5*mm))
+
+    # ── Calming ──
+    story.append(section_header("How Best To Support Me — What Helps", GREEN))
+    story.append(Spacer(1, 2*mm))
+    add(full_row("When I am distressed, this helps me:", child.get("calming_strategies",""), LIGHT_GREEN))
+    story.append(Spacer(1, 5*mm))
+
+    # ── My day ──
+    story.append(section_header("My Day — Routine and Sleep", BLUE))
+    story.append(Spacer(1, 2*mm))
+    add(full_row("My daily routine:", child.get("daily_routine",""), LIGHT_BLUE))
+    add(full_row("My sleep patterns:", child.get("sleep_patterns",""), LIGHT_BLUE))
+    story.append(Spacer(1, 5*mm))
+
+    # ── Important notes ──
+    story.append(section_header("Important Notes For Anyone Supporting Me", BLUE))
+    story.append(Spacer(1, 2*mm))
+    add(full_row("Please know:", child.get("carer_notes",""), LIGHT_BLUE))
+    story.append(Spacer(1, 5*mm))
+
+    # ── Emergency ──
+    story.append(section_header("EMERGENCY INFORMATION — PLEASE READ", RED))
+    story.append(Spacer(1, 2*mm))
+    add(info_row("Emergency Contact 1:", f"{child.get('emergency_contact_1_name','')} — {child.get('emergency_contact_1_phone','')}", LIGHT_RED))
+    add(info_row("Emergency Contact 2:", f"{child.get('emergency_contact_2_name','')} — {child.get('emergency_contact_2_phone','')}", LIGHT_RED))
+    add(info_row("GP:", f"{child.get('gp_name','')} — {child.get('gp_phone','')}", LIGHT_RED))
+    add(info_row("Key Worker:", f"{child.get('key_worker_name','')} — {child.get('key_worker_phone','')}", LIGHT_RED))
+    add(info_row("Allergies:", child.get("allergies","None"), LIGHT_RED))
+    add(info_row("Medications:", child.get("medications","None"), LIGHT_RED))
+    add(info_row("Epilepsy/Seizures:", child.get("epilepsy","No"), LIGHT_RED))
+    add(full_row("Medical notes:", child.get("medical_notes",""), LIGHT_RED))
+    add(full_row("In a medical environment:", child.get("hospital_notes",""), LIGHT_RED))
+    story.append(Spacer(1, 8*mm))
+
+    # ── Footer ──
+    footer_data = [[Paragraph(
+        f"This document was created using KnowMe — Know me before you care for me | Generated {generated}",
+        ParagraphStyle("footer", fontSize=8, textColor=colors.white,
+            fontName="Helvetica", alignment=TA_CENTER))]]
+    footer_table = Table(footer_data, colWidths=[170*mm])
+    footer_table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), BLUE),
+        ("TOPPADDING", (0,0), (-1,-1), 6),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 6),
+        ("ROUNDEDCORNERS", (0,0), (-1,-1), [6,6,6,6]),
+    ]))
+    story.append(footer_table)
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.read()
+
+# ── PDF Generator V2 ──────────────────────────────────────────────────────────
+def generate_person_centred_pdf(child):
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    import io
+
+    buffer = io.BytesIO()
+    W = 180*mm
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+        rightMargin=15*mm, leftMargin=15*mm,
+        topMargin=15*mm, bottomMargin=15*mm)
+
+    BLUE       = colors.HexColor("#1976D2")
+    BLUE_DARK  = colors.HexColor("#0D47A1")
+    GREEN      = colors.HexColor("#388E3C")
+    RED        = colors.HexColor("#C62828")
+    AMBER      = colors.HexColor("#E65100")
+    PURPLE     = colors.HexColor("#6A1B9A")
+    TEAL       = colors.HexColor("#00695C")
+    LIGHT_BLUE = colors.HexColor("#E3F2FD")
+    LIGHT_GRN  = colors.HexColor("#E8F5E9")
+    LIGHT_RED  = colors.HexColor("#FFEBEE")
+    LIGHT_AMB  = colors.HexColor("#FFF3E0")
+    LIGHT_PURP = colors.HexColor("#F3E5F5")
+    LIGHT_TEAL = colors.HexColor("#E0F2F1")
+    DARK       = colors.HexColor("#212121")
+    MID        = colors.HexColor("#555555")
+
+    def ps(nm, **kw):
+        d = dict(fontName="Helvetica", fontSize=10, textColor=DARK, leading=15)
+        d.update(kw)
+        return ParagraphStyle(nm, **d)
+
+    h_title = ps("ht", fontName="Helvetica-Bold", fontSize=20, textColor=colors.white, alignment=TA_LEFT,  leading=24)
+    h_name  = ps("hn", fontName="Helvetica-Bold", fontSize=20, textColor=colors.white, alignment=TA_RIGHT, leading=24)
+    h_sub   = ps("hs", fontName="Helvetica", fontSize=9, textColor=colors.white, alignment=TA_CENTER, leading=13)
+    sec_hdr = ps("sh", fontName="Helvetica-Bold", fontSize=11, textColor=colors.white, alignment=TA_LEFT, leading=14)
+    lbl_s   = ps("lb", fontName="Helvetica-Bold", fontSize=9, textColor=MID, leading=13)
+    body_s  = ps("bd", fontName="Helvetica", fontSize=10, textColor=DARK, leading=15)
+    foot_s  = ps("ft", fontName="Helvetica", fontSize=8, textColor=colors.white, alignment=TA_CENTER, leading=11)
+
+    name      = child.get("name", "")
+    dob_uk    = format_dob_uk(child.get("dob","")) if child.get("dob") else "Not recorded"
+    age_num   = str(age_years(child.get("dob",""))) if child.get("dob") else ""
+    diagnosis = child.get("diagnosis","Not recorded")
+    generated = datetime.now().strftime("%d/%m/%Y")
+
+    story = []
+
+    # Header
+    hdr = Table([[Paragraph("My KnowMe Passport", h_title), Paragraph(name, h_name)]],
+                colWidths=[W*0.55, W*0.45])
+    hdr.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),BLUE),
+        ("TOPPADDING",(0,0),(-1,-1),12), ("BOTTOMPADDING",(0,0),(-1,-1),12),
+        ("LEFTPADDING",(0,0),(-1,-1),12), ("RIGHTPADDING",(0,0),(-1,-1),12),
+        ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+    ]))
+    story.append(hdr)
+
+    sub = Table([[Paragraph(
+        f"Date of Birth: <b>{dob_uk}</b> &nbsp;|&nbsp; Age: <b>{age_num}</b>"
+        f" &nbsp;|&nbsp; Diagnosis: <b>{diagnosis}</b>"
+        f" &nbsp;|&nbsp; Document date: <b>{generated}</b>", h_sub)]],
+        colWidths=[W])
+    sub.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),BLUE_DARK),
+        ("TOPPADDING",(0,0),(-1,-1),6), ("BOTTOMPADDING",(0,0),(-1,-1),6),
+        ("LEFTPADDING",(0,0),(-1,-1),10), ("RIGHTPADDING",(0,0),(-1,-1),10),
+    ]))
+    story.append(sub)
+    story.append(Spacer(1, 5*mm))
+
+    def sec(icon, title, colour):
+        t = Table([[Paragraph(f"{icon}  {title}", sec_hdr)]], colWidths=[W])
+        t.setStyle(TableStyle([
+            ("BACKGROUND",(0,0),(-1,-1),colour),
+            ("TOPPADDING",(0,0),(-1,-1),8), ("BOTTOMPADDING",(0,0),(-1,-1),8),
+            ("LEFTPADDING",(0,0),(-1,-1),10), ("RIGHTPADDING",(0,0),(-1,-1),10),
+        ]))
+        story.append(t)
+
+    LINE = colors.HexColor("#BDBDBD")
+
+    def r2(label, value, bg):
+        if not value or not str(value).strip(): return
+        t = Table([[Paragraph(label, lbl_s), Paragraph(str(value), body_s)]],
+                  colWidths=[W*0.30, W*0.70])
+        t.setStyle(TableStyle([
+            ("BACKGROUND",(0,0),(-1,-1),bg),
+            ("TOPPADDING",(0,0),(-1,-1),5), ("BOTTOMPADDING",(0,0),(-1,-1),5),
+            ("LEFTPADDING",(0,0),(-1,-1),10), ("RIGHTPADDING",(0,0),(-1,-1),8),
+            ("LINEBELOW",(0,0),(-1,-1),0.3,LINE), ("VALIGN",(0,0),(-1,-1),"TOP"),
+        ]))
+        story.append(t)
+
+    def r1(label, value, bg):
+        if not value or not str(value).strip(): return
+        t = Table([[Paragraph(f"<b>{label}</b>  {value}", body_s)]], colWidths=[W])
+        t.setStyle(TableStyle([
+            ("BACKGROUND",(0,0),(-1,-1),bg),
+            ("TOPPADDING",(0,0),(-1,-1),6), ("BOTTOMPADDING",(0,0),(-1,-1),6),
+            ("LEFTPADDING",(0,0),(-1,-1),10), ("RIGHTPADDING",(0,0),(-1,-1),10),
+            ("LINEBELOW",(0,0),(-1,-1),0.3,LINE),
+        ]))
+        story.append(t)
+
+    def gap(): story.append(Spacer(1, 4*mm))
+
+    sec("👤", "About Me", BLUE)
+    r2("My name is:", name, LIGHT_BLUE)
+    r2("Date of Birth:", dob_uk, LIGHT_BLUE)
+    r2("My age:", age_num, LIGHT_BLUE)
+    r2("My diagnosis:", diagnosis, LIGHT_BLUE)
+    r2("How I communicate:", child.get("communication",""), LIGHT_BLUE)
+    gap()
+
+    sec("❤️", "What I Love — Things That Make Me Happy", GREEN)
+    r1("I love:", child.get("likes",""), LIGHT_GRN)
+    r1("My favourite foods are:", child.get("favourite_foods",""), LIGHT_GRN)
+    r1("My favourite drinks are:", child.get("favourite_drinks",""), LIGHT_GRN)
+    r1("My favourite objects and comforters are:", child.get("comforters",""), LIGHT_GRN)
+    gap()
+
+    sec("💛", "What I Find Difficult", AMBER)
+    r1("I find it hard when:", child.get("dislikes",""), LIGHT_AMB)
+    r1("Please avoid giving me:", child.get("foods_to_avoid",""), LIGHT_AMB)
+    gap()
+
+    sec("⚠️", "Things That Cause Me Distress — Please Be Aware", AMBER)
+    r1("Things that trigger distress for me:", child.get("triggers",""), LIGHT_AMB)
+    gap()
+
+    sec("✅", "How Best To Support Me — What Helps", GREEN)
+    r1("When I am distressed, this helps me:", child.get("calming_strategies",""), LIGHT_GRN)
+    gap()
+
+    sec("📅", "My Day — Routine and Sleep", TEAL)
+    r1("My daily routine:", child.get("daily_routine",""), LIGHT_TEAL)
+    r1("My sleep patterns:", child.get("sleep_patterns",""), LIGHT_TEAL)
+    gap()
+
+    sec("📋", "Important Notes For Anyone Supporting Me", PURPLE)
+    r1("Please know:", child.get("carer_notes",""), LIGHT_PURP)
+    gap()
+
+    sec("🚨", "EMERGENCY INFORMATION — PLEASE READ FIRST", RED)
+    r2("Emergency Contact 1:", f"{child.get('emergency_contact_1_name','')}  {child.get('emergency_contact_1_phone','')}", LIGHT_RED)
+    r2("Emergency Contact 2:", f"{child.get('emergency_contact_2_name','')}  {child.get('emergency_contact_2_phone','')}", LIGHT_RED)
+    r2("GP:", f"{child.get('gp_name','')}  {child.get('gp_phone','')}", LIGHT_RED)
+    r2("Key Worker:", f"{child.get('key_worker_name','')}  {child.get('key_worker_phone','')}", LIGHT_RED)
+    r2("Allergies:", child.get("allergies","None"), LIGHT_RED)
+    r2("Medications:", child.get("medications","None"), LIGHT_RED)
+    r2("Epilepsy/Seizures:", child.get("epilepsy","No"), LIGHT_RED)
+    r1("Medical notes:", child.get("medical_notes",""), LIGHT_RED)
+    r1("In a medical environment:", child.get("hospital_notes",""), LIGHT_RED)
+    gap()
+
+    ft = Table([[Paragraph(
+        f"My KnowMe Passport  |  Created with KnowMe — Know me before you care for me  |  Generated {generated}  |  CONFIDENTIAL",
+        foot_s)]], colWidths=[W])
+    ft.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),BLUE_DARK),
+        ("TOPPADDING",(0,0),(-1,-1),7), ("BOTTOMPADDING",(0,0),(-1,-1),7),
+        ("LEFTPADDING",(0,0),(-1,-1),10), ("RIGHTPADDING",(0,0),(-1,-1),10),
+    ]))
+    story.append(ft)
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.read()
+
 # ── View Child ────────────────────────────────────────────────────────────────
 def show_view_child():
     data = load_data()
@@ -761,83 +1147,17 @@ def show_view_child():
 
     # PDF Download
     logs = get_logs(data, child_id)
-    pdf_content = f"""KNOWME — CARE PROFILE
-====================
-Generated: {datetime.now().strftime('%d/%m/%Y %H:%M')}
-
-CHILD: {child.get('name','').upper()}
-Age: {child.get('age','')}
-Diagnosis: {child.get('diagnosis','')}
-Communication: {child.get('communication','')}
-
-EMERGENCY CONTACTS
-------------------
-Contact 1: {child.get('emergency_contact_1_name','')} — {child.get('emergency_contact_1_phone','')}
-Contact 2: {child.get('emergency_contact_2_name','')} — {child.get('emergency_contact_2_phone','')}
-GP: {child.get('gp_name','')} — {child.get('gp_phone','')}
-Key Worker: {child.get('key_worker_name','')} — {child.get('key_worker_phone','')}
-
-MEDICAL INFORMATION
--------------------
-Allergies: {child.get('allergies','None')}
-Medications: {child.get('medications','None')}
-Epilepsy/Seizures: {child.get('epilepsy','No')}
-Medical Notes: {child.get('medical_notes','None')}
-Hospital Notes: {child.get('hospital_notes','None')}
-
-TRIGGERS — THINGS THAT CAUSE DISTRESS
---------------------------------------
-{child.get('triggers','None recorded')}
-
-CALMING STRATEGIES — WHAT HELPS
----------------------------------
-{child.get('calming_strategies','None recorded')}
-
-ABOUT {child.get('name','').upper()}
-{'—' * 30}
-Loves: {child.get('likes','')}
-Dislikes: {child.get('dislikes','')}
-Comforters: {child.get('comforters','')}
-
-FOOD & DRINK
-------------
-Favourite Foods: {child.get('favourite_foods','')}
-Favourite Drinks: {child.get('favourite_drinks','')}
-Avoid: {child.get('foods_to_avoid','None')}
-
-DAILY ROUTINE
--------------
-{child.get('daily_routine','Not recorded')}
-
-SLEEP PATTERNS
---------------
-{child.get('sleep_patterns','Not recorded')}
-
-IMPORTANT NOTES FOR CARERS
----------------------------
-{child.get('carer_notes','No additional notes')}
-
-LOG ENTRIES ({len(logs)} total)
-{'—' * 30}
-"""
-    for log in reversed(logs[-20:]):
-        pdf_content += f"""
-Date: {log['date']} — Written by: {log['carer']}
-Mood: {log['mood']}
-Food & Drink: {log.get('food_drink','')}
-Sleep: {log.get('sleep','')}
-Notes: {log.get('notes','')}
-Incidents: {log.get('incidents','None')}
-{'—' * 20}
-"""
-
-    st.download_button(
-        label="📄 Download Profile as Text File",
-        data=pdf_content,
-        file_name=f"KnowMe_{child.get('name','profile').replace(' ','_')}_{datetime.now().strftime('%d%m%Y')}.txt",
-        mime="text/plain",
-        use_container_width=True
-    )
+    try:
+        pdf_bytes = generate_person_centred_pdf(child)
+        st.download_button(
+            label="📄 Download My KnowMe Passport (PDF)",
+            data=pdf_bytes,
+            file_name=f"KnowMe_Passport_{child.get('name','').replace(' ','_')}_{datetime.now().strftime('%d%m%Y')}.pdf",
+            mime="application/pdf",
+            use_container_width=True
+        )
+    except Exception as e:
+        st.error(f"PDF generation error: {e}")
 
     st.markdown('<div class="emergency-banner">🚨 EMERGENCY INFORMATION</div>', unsafe_allow_html=True)
 
