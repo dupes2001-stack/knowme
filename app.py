@@ -349,9 +349,9 @@ def show_share_view(token):
     """, unsafe_allow_html=True)
 
     st.divider()
-    st.subheader("📝 Add a Log Entry")
+    st.subheader("📖 Add a Journal Entry")
     with st.form("keyworker_log"):
-        log_date = st.date_input("Date", value=date.today())
+        log_date = st.date_input("Date", value=date.today(), format="DD/MM/YYYY")
         carer_name = st.text_input("Your name")
         mood = st.selectbox("How was today?", [
             "😄 Great day", "🙂 Good day", "😐 Okay day",
@@ -361,36 +361,46 @@ def show_share_view(token):
         sleep = st.text_input("Sleep (hours and quality)")
         notes = st.text_area("Notes and observations")
         incidents = st.text_area("Any incidents or concerns (leave blank if none)")
-        submitted = st.form_submit_button("💙 Save Log Entry", use_container_width=True)
+        medication_given = st.checkbox("Medication given today")
+        medication_times = st.text_input("💊 Medication times and doses", placeholder="e.g. 8am — 5mg Melatonin, 12pm — 10mg Ritalin")
+        submitted = st.form_submit_button("💙 Save Journal Entry", use_container_width=True)
         if submitted:
             if carer_name:
                 entry = {
                     "date": str(log_date), "carer": carer_name, "mood": mood,
                     "food_drink": food_drink, "sleep": sleep, "notes": notes,
-                    "incidents": incidents, "timestamp": datetime.now().isoformat()
+                    "incidents": incidents, "medication_given": medication_given,
+                    "medication_times": medication_times,
+                    "timestamp": datetime.now().isoformat()
                 }
                 add_log_entry(data, child_id, entry)
-                st.success("✅ Log entry saved! The parent will be able to see this.")
+                st.success("✅ Journal entry saved! The parent will be able to see this.")
             else:
                 st.error("Please enter your name.")
 
     st.divider()
-    st.subheader("📖 Recent Log Entries")
+    st.subheader("📖 Recent Journal Entries")
     logs = get_logs(data, child_id)
     if logs:
         for log in reversed(logs[-10:]):
+            try:
+                log_date_uk = datetime.strptime(log['date'], "%Y-%m-%d").strftime("%d/%m/%Y")
+            except:
+                log_date_uk = log['date']
+            food_html = f"<strong>Food & Drink:</strong> {log.get('food_drink','')}<br>" if log.get('food_drink') else ""
+            sleep_html = f"<strong>Sleep:</strong> {log.get('sleep','')}<br>" if log.get('sleep') else ""
+            notes_html = f"<strong>Notes:</strong> {log.get('notes','')}<br>" if log.get('notes') else ""
+            med_html = f"<strong>💊 Medication:</strong> {log.get('medication_times','')}<br>" if log.get('medication_given') and log.get('medication_times') else ""
+            inc_html = f"<strong>⚠️ Incidents:</strong> {log.get('incidents','')}" if log.get('incidents') else ""
             st.markdown(f"""
             <div class="log-entry">
-                <strong>📅 {log['date']}</strong> — Written by <strong>{log['carer']}</strong><br>
+                <strong>📅 {log_date_uk}</strong> — Written by <strong>{log['carer']}</strong><br>
                 <strong>Mood:</strong> {log['mood']}<br>
-                {f"<strong>Food & Drink:</strong> {log['food_drink']}<br>" if log.get('food_drink') else ""}
-                {f"<strong>Sleep:</strong> {log['sleep']}<br>" if log.get('sleep') else ""}
-                {f"<strong>Notes:</strong> {log['notes']}<br>" if log.get('notes') else ""}
-                {f"<strong>⚠️ Incidents:</strong> {log['incidents']}" if log.get('incidents') else ""}
+                {food_html}{sleep_html}{notes_html}{med_html}{inc_html}
             </div>
             """, unsafe_allow_html=True)
     else:
-        st.info("No log entries yet.")
+        st.info("No journal entries yet.")
 
 # ── Login / Register ──────────────────────────────────────────────────────────
 def show_auth():
@@ -435,7 +445,7 @@ def show_auth():
         <div class="card card-amber" style="text-align:center; padding:1.5rem;">
             <div style="font-size:2.5rem;">📝</div>
             <h3 style="color:#1a1a1a;">Daily Logs</h3>
-            <p style="color:#333333;">Parents and carers can add daily log entries. Track mood, food, sleep and behaviour — all in one shared place everyone can see.</p>
+            <p style="color:#333333;">Parents and carers can add daily journal entries. Track mood, food, sleep and behaviour — all in one shared place everyone can see.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -515,7 +525,7 @@ def show_auth():
         st.markdown("""
         <div class="card">
             <h3>🔗 Key Worker / Carer Access</h3>
-            <p>If a parent has shared a KnowMe code with you, enter it below to view the child's profile and add log entries.</p>
+            <p>If a parent has shared a KnowMe code with you, enter it below to view the child's profile and add journal entries.</p>
         </div>
         """, unsafe_allow_html=True)
         share_code = st.text_input("Enter share code (e.g. ABC12345)")
@@ -582,7 +592,7 @@ def show_dashboard():
                         {photo_html}
                         <div>
                             <h3 style="margin:0;">💙 {child.get('name','Unknown')}</h3>
-                            <p style="margin:0;color:#666;">DOB: {dob_uk} | Age: {age_num} | {len(logs)} log entries</p>
+                            <p style="margin:0;color:#666;">DOB: {dob_uk} | Age: {age_num} | {len(logs)} journal entries</p>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -592,7 +602,7 @@ def show_dashboard():
                         st.session_state.page = "view_child"
                         st.rerun()
                 with col_c:
-                    if st.button("📝 Log", key=f"log_{child_id}", use_container_width=True):
+                    if st.button("📖 Journal", key=f"log_{child_id}", use_container_width=True):
                         st.session_state.selected_child = child_id
                         st.session_state.page = "add_log"
                         st.rerun()
@@ -1102,6 +1112,290 @@ def generate_person_centred_pdf(child):
     buffer.seek(0)
     return buffer.read()
 
+# ── Journal Report PDF ────────────────────────────────────────────────────────────
+def generate_log_report_pdf(child, logs, from_str, to_str):
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    import io
+
+    buffer = io.BytesIO()
+    W = 180*mm
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+        rightMargin=15*mm, leftMargin=15*mm,
+        topMargin=15*mm, bottomMargin=15*mm)
+
+    BLUE      = colors.HexColor("#1976D2")
+    BLUE_DARK = colors.HexColor("#0D47A1")
+    GREEN     = colors.HexColor("#388E3C")
+    RED       = colors.HexColor("#C62828")
+    AMBER     = colors.HexColor("#E65100")
+    LIGHT_BL  = colors.HexColor("#E3F2FD")
+    LIGHT_GRN = colors.HexColor("#E8F5E9")
+    LIGHT_RED = colors.HexColor("#FFEBEE")
+    LIGHT_AMB = colors.HexColor("#FFF3E0")
+    GREY_LT   = colors.HexColor("#F5F5F5")
+    DARK      = colors.HexColor("#212121")
+    MID       = colors.HexColor("#555555")
+    LINE      = colors.HexColor("#BDBDBD")
+
+    def ps(nm, **kw):
+        d = dict(fontName="Helvetica", fontSize=10, textColor=DARK, leading=15)
+        d.update(kw)
+        return ParagraphStyle(nm, **d)
+
+    h_title = ps("ht", fontName="Helvetica-Bold", fontSize=20, textColor=colors.white, leading=24)
+    h_name  = ps("hn", fontName="Helvetica-Bold", fontSize=20, textColor=colors.white, leading=24)
+    h_sub   = ps("hs", fontName="Helvetica", fontSize=9, textColor=colors.white, alignment=TA_CENTER, leading=13)
+    sec_hdr = ps("sh", fontName="Helvetica-Bold", fontSize=11, textColor=colors.white, leading=14)
+    lbl_s   = ps("lb", fontName="Helvetica-Bold", fontSize=9, textColor=MID, leading=13)
+    body_s  = ps("bd", fontName="Helvetica", fontSize=10, textColor=DARK, leading=15)
+    foot_s  = ps("ft", fontName="Helvetica", fontSize=8, textColor=colors.white, alignment=TA_CENTER, leading=11)
+    stat_s  = ps("st", fontName="Helvetica-Bold", fontSize=14, textColor=DARK, alignment=TA_CENTER, leading=18)
+    stat_l  = ps("sl", fontName="Helvetica", fontSize=9, textColor=MID, alignment=TA_CENTER, leading=12)
+
+    name      = child.get("name", "")
+    generated = datetime.now().strftime("%d/%m/%Y")
+
+    story = []
+
+    # Header
+    hdr = Table([[Paragraph("KnowMe Journal Report", h_title), Paragraph(name, h_name)]],
+                colWidths=[W*0.55, W*0.45])
+    hdr.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),BLUE),
+        ("TOPPADDING",(0,0),(-1,-1),12), ("BOTTOMPADDING",(0,0),(-1,-1),12),
+        ("LEFTPADDING",(0,0),(-1,-1),12), ("RIGHTPADDING",(0,0),(-1,-1),12),
+        ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+    ]))
+    story.append(hdr)
+
+    sub = Table([[Paragraph(
+        f"Date Range: <b>{from_str}</b> to <b>{to_str}</b>"
+        f" &nbsp;|&nbsp; Total Entries: <b>{len(logs)}</b>"
+        f" &nbsp;|&nbsp; Generated: <b>{generated}</b>", h_sub)]],
+        colWidths=[W])
+    sub.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),BLUE_DARK),
+        ("TOPPADDING",(0,0),(-1,-1),6), ("BOTTOMPADDING",(0,0),(-1,-1),6),
+        ("LEFTPADDING",(0,0),(-1,-1),10), ("RIGHTPADDING",(0,0),(-1,-1),10),
+    ]))
+    story.append(sub)
+    story.append(Spacer(1, 5*mm))
+
+    # Summary stats
+    mood_counts = {}
+    incident_days = 0
+    for log in logs:
+        mood = log.get("mood","")
+        mood_counts[mood] = mood_counts.get(mood, 0) + 1
+        if log.get("incidents","").strip():
+            incident_days += 1
+
+    great = mood_counts.get("😄 Great day", 0)
+    good  = mood_counts.get("🙂 Good day", 0)
+    okay  = mood_counts.get("😐 Okay day", 0)
+    diff  = mood_counts.get("😟 Difficult day", 0)
+    vdiff = mood_counts.get("😢 Very difficult day", 0)
+
+    sec_t = Table([[Paragraph("📊  Summary", sec_hdr)]], colWidths=[W])
+    sec_t.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),BLUE),
+        ("TOPPADDING",(0,0),(-1,-1),8), ("BOTTOMPADDING",(0,0),(-1,-1),8),
+        ("LEFTPADDING",(0,0),(-1,-1),10),
+    ]))
+    story.append(sec_t)
+
+    stats = Table([
+        [Paragraph(str(len(logs)), stat_s), Paragraph(str(great), stat_s),
+         Paragraph(str(good), stat_s),  Paragraph(str(okay), stat_s),
+         Paragraph(str(diff+vdiff), stat_s), Paragraph(str(incident_days), stat_s)],
+        [Paragraph("Total Entries", stat_l), Paragraph("Great Days", stat_l),
+         Paragraph("Good Days", stat_l), Paragraph("Okay Days", stat_l),
+         Paragraph("Difficult Days", stat_l), Paragraph("Incident Days", stat_l)],
+    ], colWidths=[W/6]*6)
+    stats.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),LIGHT_BL),
+        ("BACKGROUND",(5,0),(5,-1),LIGHT_RED),
+        ("TOPPADDING",(0,0),(-1,-1),8), ("BOTTOMPADDING",(0,0),(-1,-1),8),
+        ("ALIGN",(0,0),(-1,-1),"CENTER"),
+        ("LINEAFTER",(0,0),(4,-1),0.5,LINE),
+    ]))
+    story.append(stats)
+    story.append(Spacer(1, 5*mm))
+
+    # ── Mood Chart ────────────────────────────────────────────────────────────
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as mpatches
+        from reportlab.platypus import Image as RLImage
+        import io as chart_io
+
+        mood_score = {
+            "😄 Great day": 5,
+            "🙂 Good day": 4,
+            "😐 Okay day": 3,
+            "😟 Difficult day": 2,
+            "😢 Very difficult day": 1,
+        }
+        mood_colour_map = {
+            5: "#4CAF50", 4: "#8BC34A", 3: "#FF9800",
+            2: "#F44336", 1: "#B71C1C",
+        }
+
+        sorted_logs_chart = sorted(logs, key=lambda x: x['date'])
+        dates_labels = [
+            datetime.strptime(l['date'], "%Y-%m-%d").strftime("%d/%m")
+            for l in sorted_logs_chart
+        ]
+        scores = [mood_score.get(l.get("mood", ""), 3) for l in sorted_logs_chart]
+        bar_cols = [mood_colour_map.get(s, "#FF9800") for s in scores]
+        inc_marks = [bool(l.get("incidents", "").strip()) for l in sorted_logs_chart]
+
+        fig, ax = plt.subplots(figsize=(10, 3))
+        bars = ax.bar(range(len(scores)), scores, color=bar_cols, width=0.55,
+                      zorder=2, edgecolor='white', linewidth=0.8)
+
+        # Value labels on bars
+        for i, s in enumerate(scores):
+            label = {5:"Great",4:"Good",3:"Okay",2:"Difficult",1:"Very Difficult"}.get(s,"")
+            ax.text(i, s/2, label, ha='center', va='center',
+                    fontsize=6.5, color='white', fontweight='bold', zorder=5)
+
+        for i, (s, inc) in enumerate(zip(scores, inc_marks)):
+            if inc:
+                ax.plot(i, s + 0.25, 'D', color='#B71C1C', markersize=6,
+                        markeredgecolor='white', markeredgewidth=0.8, zorder=3)
+                ax.text(i, s + 0.55, 'INCIDENT', ha='center', va='bottom',
+                        fontsize=5.5, color='#B71C1C', fontweight='bold', zorder=4)
+
+        ax.set_xticks(range(len(dates_labels)))
+        ax.set_xticklabels(
+            dates_labels, fontsize=7,
+            rotation=45 if len(dates_labels) > 12 else 0
+        )
+        ax.set_yticks([1, 2, 3, 4, 5])
+        ax.set_yticklabels(["Very Difficult", "Difficult", "Okay", "Good", "Great"], fontsize=7)
+        ax.set_ylim(0, 6.5)
+        ax.set_xlim(-0.5, max(len(scores) - 0.5, 0.5))
+        ax.grid(axis='y', linestyle='--', alpha=0.4, zorder=1)
+        ax.set_facecolor("#F8F9FA")
+        fig.patch.set_facecolor("#FFFFFF")
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.set_title(f"Mood Chart — {from_str} to {to_str}", fontsize=10, fontweight='bold', pad=10)
+
+        patches = [
+            mpatches.Patch(color="#4CAF50", label="Great"),
+            mpatches.Patch(color="#8BC34A", label="Good"),
+            mpatches.Patch(color="#FF9800", label="Okay"),
+            mpatches.Patch(color="#F44336", label="Difficult"),
+            mpatches.Patch(color="#B71C1C", label="Very Difficult"),
+        ]
+        ax.legend(handles=patches, loc='upper right', fontsize=7,
+                  ncol=5, framealpha=0.8)
+
+        plt.tight_layout()
+        chart_buf = chart_io.BytesIO()
+        plt.savefig(chart_buf, format='PNG', dpi=150, bbox_inches='tight',
+                    facecolor='white')
+        plt.close(fig)
+        chart_buf.seek(0)
+
+        img = RLImage(chart_buf, width=W, height=65*mm)
+        story.append(img)
+        story.append(Spacer(1, 2*mm))
+
+        if any(inc_marks):
+            note = Table([[Paragraph(
+                "● Red diamond markers above bars indicate days where incidents were recorded",
+                ps("note", fontSize=8, textColor=RED,
+                   fontName="Helvetica-Oblique")
+            )]], colWidths=[W])
+            story.append(note)
+        story.append(Spacer(1, 4*mm))
+
+    except Exception as chart_err:
+        story.append(Paragraph(
+            f"Mood chart could not be generated: {chart_err}",
+            ps("cerr", fontSize=8, textColor=RED)
+        ))
+        story.append(Spacer(1, 4*mm))
+
+    # Journal entries
+    sec_t2 = Table([[Paragraph("📋  Journal Entries", sec_hdr)]], colWidths=[W])
+    sec_t2.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),BLUE),
+        ("TOPPADDING",(0,0),(-1,-1),8), ("BOTTOMPADDING",(0,0),(-1,-1),8),
+        ("LEFTPADDING",(0,0),(-1,-1),10),
+    ]))
+    story.append(sec_t2)
+
+    for log in sorted(logs, key=lambda x: x['date']):
+        has_incident = bool(log.get("incidents","").strip())
+        bg = LIGHT_RED if has_incident else GREY_LT
+
+        date_uk = datetime.strptime(log['date'], "%Y-%m-%d").strftime("%d/%m/%Y")
+        incident_marker = "  ⚠️ INCIDENT RECORDED" if has_incident else ""
+
+        # Entry header row
+        hrow = Table([[
+            Paragraph(f"<b>📅 {date_uk}</b>{incident_marker}", ps("eh", fontName="Helvetica-Bold", fontSize=10, textColor=colors.white, leading=14)),
+            Paragraph(f"Written by: {log.get('carer','')}", ps("ec", fontName="Helvetica", fontSize=9, textColor=colors.white, leading=14))
+        ]], colWidths=[W*0.6, W*0.4])
+        entry_colour = RED if has_incident else colors.HexColor("#455A64")
+        hrow.setStyle(TableStyle([
+            ("BACKGROUND",(0,0),(-1,-1),entry_colour),
+            ("TOPPADDING",(0,0),(-1,-1),5), ("BOTTOMPADDING",(0,0),(-1,-1),5),
+            ("LEFTPADDING",(0,0),(-1,-1),10), ("RIGHTPADDING",(0,0),(-1,-1),8),
+        ]))
+        story.append(hrow)
+
+        # Entry body
+        def erow(label, value, bg=GREY_LT):
+            if not value or not str(value).strip(): return
+            t = Table([[Paragraph(label, lbl_s), Paragraph(str(value), body_s)]],
+                      colWidths=[W*0.25, W*0.75])
+            t.setStyle(TableStyle([
+                ("BACKGROUND",(0,0),(-1,-1),bg),
+                ("TOPPADDING",(0,0),(-1,-1),4), ("BOTTOMPADDING",(0,0),(-1,-1),4),
+                ("LEFTPADDING",(0,0),(-1,-1),10), ("RIGHTPADDING",(0,0),(-1,-1),8),
+                ("LINEBELOW",(0,0),(-1,-1),0.3,LINE), ("VALIGN",(0,0),(-1,-1),"TOP"),
+            ]))
+            story.append(t)
+
+        erow("Mood:", log.get("mood",""))
+        erow("Food & Drink:", log.get("food_drink",""))
+        erow("Sleep:", log.get("sleep",""))
+        erow("Activities:", log.get("activities",""))
+        erow("Notes:", log.get("notes",""))
+        if log.get("medication_given") and log.get("medication_times","").strip():
+            erow("💊 Medication:", log.get("medication_times",""), LIGHT_BL)
+        if has_incident:
+            erow("⚠️ Incidents:", log.get("incidents",""), LIGHT_RED)
+
+        story.append(Spacer(1, 3*mm))
+
+    # Footer
+    ft = Table([[Paragraph(
+        f"KnowMe Journal Report  |  {name}  |  {from_str} to {to_str}  |  Generated {generated}  |  CONFIDENTIAL",
+        foot_s)]], colWidths=[W])
+    ft.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),BLUE_DARK),
+        ("TOPPADDING",(0,0),(-1,-1),7), ("BOTTOMPADDING",(0,0),(-1,-1),7),
+        ("LEFTPADDING",(0,0),(-1,-1),10), ("RIGHTPADDING",(0,0),(-1,-1),10),
+    ]))
+    story.append(ft)
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.read()
+
 # ── View Child ────────────────────────────────────────────────────────────────
 def show_view_child():
     data = load_data()
@@ -1137,7 +1431,7 @@ def show_view_child():
             st.session_state.page = "edit_child"
             st.rerun()
     with col_log:
-        if st.button("📝 Add Log", use_container_width=True):
+        if st.button("📖 Add Journal", use_container_width=True):
             st.session_state.page = "add_log"
             st.rerun()
     with col_share:
@@ -1240,25 +1534,92 @@ def show_view_child():
     """, unsafe_allow_html=True)
 
     st.divider()
-    st.subheader("📖 Log Entries")
+    st.subheader("📖 Journal Entries")
     logs = get_logs(data, child_id)
     if logs:
-        for log in reversed(logs):
-            st.markdown(f"""
-            <div class="log-entry">
-                <strong>📅 {log['date']}</strong> — Written by <strong>{log['carer']}</strong><br>
-                <strong>Mood:</strong> {log['mood']}<br>
-                {f"<strong>Food & Drink:</strong> {log['food_drink']}<br>" if log.get('food_drink') else ""}
-                {f"<strong>Sleep:</strong> {log['sleep']}<br>" if log.get('sleep') else ""}
-                {f"<strong>Activities:</strong> {log['activities']}<br>" if log.get('activities') else ""}
-                {f"<strong>Notes:</strong> {log['notes']}<br>" if log.get('notes') else ""}
-                {f"<strong>⚠️ Incidents:</strong> {log['incidents']}" if log.get('incidents') else ""}
-            </div>
-            """, unsafe_allow_html=True)
-    else:
-        st.info("No log entries yet. Add the first one!")
+        # Sort all logs newest first
+        sorted_logs = sorted(logs, key=lambda x: x['date'], reverse=True)
 
-# ── Add Log ───────────────────────────────────────────────────────────────────
+        # Group by month
+        from collections import defaultdict
+        months = defaultdict(list)
+        for log in sorted_logs:
+            try:
+                month_key = datetime.strptime(log['date'], "%Y-%m-%d").strftime("%B %Y")
+            except:
+                month_key = "Unknown"
+            months[month_key].append(log)
+
+        # Display each month as an expander
+        for month_label, month_logs in months.items():
+            incident_count = sum(1 for l in month_logs if l.get('incidents','').strip())
+            incident_badge = f" 🔴 {incident_count} incident{'s' if incident_count>1 else ''}" if incident_count else ""
+            with st.expander(f"📅 {month_label} — {len(month_logs)} {'entry' if len(month_logs)==1 else 'entries'}{incident_badge}"):
+                for log in month_logs:
+                    try:
+                        log_date_uk = datetime.strptime(log['date'], "%Y-%m-%d").strftime("%d/%m/%Y")
+                    except:
+                        log_date_uk = log['date']
+                    food_html = f"<strong>Food & Drink:</strong> {log.get('food_drink','')}<br>" if log.get('food_drink') else ""
+                    sleep_html = f"<strong>Sleep:</strong> {log.get('sleep','')}<br>" if log.get('sleep') else ""
+                    act_html = f"<strong>Activities:</strong> {log.get('activities','')}<br>" if log.get('activities') else ""
+                    notes_html = f"<strong>Notes:</strong> {log.get('notes','')}<br>" if log.get('notes') else ""
+                    med_html = f"<strong>💊 Medication:</strong> {log.get('medication_times','')}<br>" if log.get('medication_given') and log.get('medication_times') else ""
+                    inc_html = f"<strong>⚠️ Incidents:</strong> {log.get('incidents','')}" if log.get('incidents') else ""
+                    border_colour = "#f44336" if log.get('incidents') else "#2196F3"
+                    st.markdown(f"""
+                    <div class="log-entry" style="border-left-color:{border_colour};">
+                        <strong>📅 {log_date_uk}</strong> — Written by <strong>{log['carer']}</strong><br>
+                        <strong>Mood:</strong> {log['mood']}<br>
+                        {food_html}{sleep_html}{act_html}{notes_html}{med_html}{inc_html}
+                    </div>
+                    """, unsafe_allow_html=True)
+
+        # ── Journal Report Download ──
+        st.divider()
+        st.markdown("""
+        <div class="card card-blue">
+            <h3 style="color:#1a1a1a;">📊 Download Journal Report</h3>
+            <p style="color:#333333;">Select a date range to download a PDF report of journal entries for that period. Useful for spotting patterns or sharing with professionals.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        all_dates = sorted([log['date'] for log in logs])
+        min_date = datetime.strptime(all_dates[0], "%Y-%m-%d").date()
+        max_date = datetime.strptime(all_dates[-1], "%Y-%m-%d").date()
+
+        col_a, col_b = st.columns(2)
+        with col_a:
+            report_from = st.date_input("From date", value=min_date, min_value=min_date, max_value=max_date, key="report_from", format="DD/MM/YYYY")
+        with col_b:
+            report_to = st.date_input("To date", value=max_date, min_value=min_date, max_value=max_date, key="report_to", format="DD/MM/YYYY")
+
+        # Inclusive filtering — convert both sides to string for safe comparison
+        from_str_filter = report_from.strftime("%Y-%m-%d")
+        to_str_filter   = report_to.strftime("%Y-%m-%d")
+        filtered_logs   = [log for log in logs if from_str_filter <= log['date'] <= to_str_filter]
+        filtered_logs   = sorted(filtered_logs, key=lambda x: x['date'])
+
+        st.info(f"📋 {len(filtered_logs)} log {'entry' if len(filtered_logs)==1 else 'entries'} found in selected date range")
+
+        if filtered_logs:
+            try:
+                log_pdf = generate_log_report_pdf(child, filtered_logs, report_from.strftime("%d/%m/%Y"), report_to.strftime("%d/%m/%Y"))
+                st.download_button(
+                    label="📊 Download Journal Report PDF",
+                    data=log_pdf,
+                    file_name=f"KnowMe_JournalReport_{child.get('name','').replace(' ','_')}_{report_from.strftime('%d%m%Y')}_to_{report_to.strftime('%d%m%Y')}.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+            except Exception as e:
+                st.error(f"PDF generation error: {e}")
+        else:
+            st.warning("No journal entries in selected date range.")
+    else:
+        st.info("No journal entries yet. Add the first one!")
+
+# ── Add Journal ───────────────────────────────────────────────────────────────────
 def show_add_log():
     data = load_data()
     child_id = st.session_state.selected_child
@@ -1267,7 +1628,7 @@ def show_add_log():
     st.markdown(f"""
     <div class="knowme-header">
         <h1>💙 KnowMe</h1>
-        <p>Add Log Entry — {child.get('name','Child')}</p>
+        <p>Add Journal Entry — {child.get('name','Child')}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1278,7 +1639,7 @@ def show_add_log():
     with st.form("add_log_form"):
         col1, col2 = st.columns(2)
         with col1:
-            log_date = st.date_input("Date", value=date.today())
+            log_date = st.date_input("Date", value=date.today(), format="DD/MM/YYYY")
             carer_name = st.text_input("Written by", value=st.session_state.user["name"])
         with col2:
             mood = st.selectbox("How was today?", [
@@ -1292,18 +1653,20 @@ def show_add_log():
         notes = st.text_area("Notes and observations")
         incidents = st.text_area("Any incidents or concerns (leave blank if none)")
         medication_given = st.checkbox("Medication given today")
+        medication_times = st.text_input("💊 Medication times and doses", placeholder="e.g. 8am — 5mg Melatonin, 12pm — 10mg Ritalin")
 
-        submitted = st.form_submit_button("💙 Save Log Entry", use_container_width=True)
+        submitted = st.form_submit_button("💙 Save Journal Entry", use_container_width=True)
         if submitted:
             entry = {
                 "date": str(log_date), "carer": carer_name, "mood": mood,
                 "sleep": sleep, "food_drink": food_drink, "activities": activities,
                 "notes": notes, "incidents": incidents,
                 "medication_given": medication_given,
+                "medication_times": medication_times,
                 "timestamp": datetime.now().isoformat()
             }
             add_log_entry(data, child_id, entry)
-            st.success("✅ Log entry saved!")
+            st.success("✅ Journal entry saved!")
             st.session_state.page = "view_child"
             st.rerun()
 
@@ -1328,7 +1691,7 @@ def show_share_child():
     <div class="card">
         <h3>🔗 Share with Key Workers & Carers</h3>
         <p>Generate a unique share code and give it to key workers, teachers, or carers.
-        They can use it to view the full profile and add daily log entries without needing an account.</p>
+        They can use it to view the full profile and add daily journal entries without needing an account.</p>
     </div>
     """, unsafe_allow_html=True)
 
