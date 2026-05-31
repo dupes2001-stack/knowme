@@ -405,9 +405,9 @@ def show_auth():
     st.markdown("""
     <div style="text-align:center; padding: 1rem 0 2rem;">
         <p style="font-size:1.2rem; color:#444; max-width:700px; margin:0 auto; line-height:1.8;">
-        KnowMe is a care profile app designed by parents of non-verbal autistic children.
-        It gives every key worker, carer and teacher instant access to everything they need
-        to know about your child — before they even walk through the door.
+        KnowMe is a care profile app designed for families of children with Special Educational 
+        Needs and Disabilities (SEND). It gives every key worker, carer and teacher instant access 
+        to everything they need to know about your child — before they even walk through the door.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -444,15 +444,25 @@ def show_auth():
     <div class="card" style="margin-top:1rem; text-align:center;">
         <h3>💙 Why KnowMe?</h3>
         <p style="line-height:1.8;">
-        For families of non-verbal autistic children, every new carer or key worker means starting from scratch —
+        For families of children with SEND, every new carer, key worker or teacher means starting from scratch —
         repeating the same information over and over, hoping nothing important gets missed.
-        KnowMe changes that. Build your child's profile once and share it instantly with anyone who needs it.
-        From emergency contacts to sensory triggers, from favourite foods to calming strategies —
-        everything is in one place, always up to date, always accessible.
+        KnowMe changes that. Whether your child has autism, ADHD, learning disabilities, physical disabilities,
+        sensory needs or any other SEND diagnosis — build their profile once and share it instantly 
+        with anyone who needs it. From emergency contacts to sensory triggers, from favourite foods 
+        to calming strategies — everything is in one place, always up to date, always accessible.
         </p>
         <p style="font-weight:700; color:#2196F3; font-size:1.1rem;">
-        Built by a parent. Designed for families like yours. 💙
+        Built by a SEND parent. Designed for families like yours. 💙
         </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Who is it for
+    st.markdown("""
+    <div class="card card-blue" style="margin-top:0.5rem;">
+        <h3>👨‍👩‍👧‍👦 Who is KnowMe for?</h3>
+        <p>KnowMe is for any family of a child with SEND including:</p>
+        <p>🧩 Autism Spectrum Condition &nbsp;|&nbsp; ⚡ ADHD &nbsp;|&nbsp; 🧠 Learning Disabilities &nbsp;|&nbsp; 👂 Sensory Processing Disorders &nbsp;|&nbsp; 🦽 Physical Disabilities &nbsp;|&nbsp; 💬 Speech and Language Needs &nbsp;|&nbsp; 🌈 Any other SEND diagnosis</p>
     </div>
     """, unsafe_allow_html=True)
 
